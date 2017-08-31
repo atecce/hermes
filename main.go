@@ -5,6 +5,14 @@ import (
 	"errors"
 	"log"
 	"os/exec"
+	"path/filepath"
+)
+
+const gitDir = "/home/git"
+
+var (
+	tmpDir  = filepath.Join(gitDir, "tmp/www")
+	repoDir = filepath.Join(gitDir, "www.git")
 )
 
 type temp interface {
@@ -19,17 +27,17 @@ type temp interface {
 
 func clean() error {
 	log.Println("[INFO] cleaning...")
-	return executeCommand("rm", "-rf", "/home/git/tmp/www")
+	return executeCommand("rm", "-rf", tmpDir)
 }
 
 func clone() error {
 	log.Println("[INFO] cloning...")
-	return executeCommand("git", "clone", "/home/git/www.git", "/home/git/tmp/www")
+	return executeCommand("git", "clone", repoDir, tmpDir)
 }
 
 func build() error {
 	log.Println("[INFO] building...")
-	return executeCommand("jekyll", "build", "-s", "/home/git/tmp/www", "-d", "/home/git/tmp/www/_site")
+	return executeCommand("jekyll", "build", "-s", tmpDir, "-d", filepath.Join(tmpDir, "_site"))
 }
 
 func test() error {
@@ -37,16 +45,14 @@ func test() error {
 	return nil
 }
 
-var resourceAlreadyProvisioned = errors.New("resource already provisioned")
-
 func provision() error {
 	log.Println("[INFO] provisioning...")
-	return executeCommand("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--format", "json")
+	return executeCommand("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b")
 }
 
 func deploy() error {
 	log.Println("[INFO] deploying...")
-	return executeCommand("gcloud", "compute", "copy-files", "/home/git/tmp/www/_site", "atec@atec:/home/atec", "--zone", "us-east1-b", "--format", "json")
+	return executeCommand("gcloud", "compute", "copy-files", "/home/git/tmp/www/_site", "atec@atec:/home/atec", "--zone", "us-east1-b")
 }
 
 func main() {
@@ -86,7 +92,6 @@ func executeCommand(argv ...string) error {
 	cmd.Stderr = &errbuf
 
 	if err := cmd.Run(); err != nil {
-
 		output := outbuf.String() + "\n" + errbuf.String()
 		return errors.New(output)
 	}
