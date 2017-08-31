@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 type temp interface {
@@ -19,18 +18,19 @@ type temp interface {
 	monitor() error
 }
 
+func clean() error {
+	log.Println("[INFO] cleaning...")
+	return executeCommand("rm", "-rf", "/home/git/tmp/www")
+}
+
 func clone() error {
 	log.Println("[INFO] cloning...")
-	err := exec.Command("rm", "-rf", "/home/git/tmp/www").Run()
-	if err != nil {
-		return err
-	}
-	return exec.Command("git", "clone", "/home/git/www.git", "/home/git/tmp/www").Run()
+	return executeCommand("git", "clone", "/home/git/www.git", "/home/git/tmp/www")
 }
 
 func build() error {
 	log.Println("[INFO] building...")
-	return exec.Command("jekyll", "build", "-s", "/home/git/tmp/www", "-d", "/home/git/tmp/www/_site").Run()
+	return executeCommand("jekyll", "build", "-s", "/home/git/tmp/www", "-d", "/home/git/tmp/www/_site")
 }
 
 func test() error {
@@ -38,30 +38,25 @@ func test() error {
 	return nil
 }
 
+var resourceAlreadyProvisioned = errors.New("resource already provisioned")
+
 func provision() error {
 	log.Println("[INFO] provisioning...")
-	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		// TODO check nested err?
-		stderr, _ := ioutil.ReadAll(os.Stderr)
-		return errors.New(string(stderr))
-	}
-	return nil
+	return executeCommand("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--format", "json")
 }
 
 func deploy() error {
 	log.Println("[INFO] deploying...")
-	err := exec.Command("gcloud", "compute", "scp", "notebook", "atec.pub:/home/atec/").Run()
-	if err != nil {
-		return err
-	}
-	return exec.Command("gcloud", "compute", "scp", "_site/*", "atec.pub:/var/www/").Run()
+	return executeCommand("gcloud", "compute", "copy-files", "/home/git/tmp/www/_site", "atec@atec:/home/atec", "--zone", "us-east1-b", "--format", "json")
 }
 
 func main() {
-	err := clone()
+	err := clean()
+	if err != nil {
+		log.Println("[FATAL] failed to clean")
+		log.Fatal("[FATAL] ", err)
+	}
+	err = clone()
 	if err != nil {
 		log.Println("[FATAL] failed to clone")
 		log.Fatal("[FATAL] ", err)
@@ -73,7 +68,31 @@ func main() {
 	}
 	err = provision()
 	if err != nil {
-		log.Println("[FATAL] failed to provision")
+		log.Println("[ERROR] failed to provision (maybe instance is already up?)")
+		log.Println("[ERROR] ", err)
+	}
+	err = deploy()
+	if err != nil {
+		log.Println("[FATAL] failed to deploy")
 		log.Fatal("[FATAL] ", err)
 	}
+}
+
+func executeCommand(argv ...string) error {
+	cmd := exec.Command(argv[0], argv[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return errors.New(readFile(os.Stderr))
+	}
+	return nil
+}
+
+func readFile(f *os.File) string {
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Println("[ERROR] failed to read file")
+		log.Println(err)
+	}
+	return string(bytes)
 }
