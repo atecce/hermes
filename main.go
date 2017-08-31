@@ -1,10 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"errors"
-	"io/ioutil"
 	"log"
-	"os"
 	"os/exec"
 )
 
@@ -79,20 +78,17 @@ func main() {
 }
 
 func executeCommand(argv ...string) error {
+
 	cmd := exec.Command(argv[0], argv[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+
+	var outbuf, errbuf bytes.Buffer
+	cmd.Stdout = &outbuf
+	cmd.Stderr = &errbuf
+
 	if err := cmd.Run(); err != nil {
-		return errors.New(readFile(os.Stderr))
+
+		output := outbuf.String() + "\n" + errbuf.String()
+		return errors.New(output)
 	}
 	return nil
-}
-
-func readFile(f *os.File) string {
-	bytes, err := ioutil.ReadAll(f)
-	if err != nil {
-		log.Println("[ERROR] failed to read file")
-		log.Println(err)
-	}
-	return string(bytes)
 }
