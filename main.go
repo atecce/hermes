@@ -46,9 +46,18 @@ func test() error {
 	return nil
 }
 
+var resourceAlreadyProvisioned = errors.New("resource already provisioned")
+
 func provision() error {
 	log.Println("[INFO] provisioning...")
-	return executeCommand("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b")
+	err := executeCommand("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b")
+	switch err {
+	case resourceAlreadyProvisioned:
+		log.Println("[INFO] resource already provisioned. skipping")
+		return nil
+	default:
+		return err
+	}
 }
 
 func deploy() error {
@@ -94,11 +103,10 @@ func executeCommand(argv ...string) error {
 
 	if err := cmd.Run(); err != nil {
 
-		// TODO special case for provision. move outside
 		if strings.Contains(errbuf.String(), "already exists") {
-			log.Println("[INFO] resource already provisioned. skipping")
-			return nil
+			return resourceAlreadyProvisioned
 		}
+
 		output := outbuf.String() + errbuf.String()
 		return errors.New(output)
 	}
