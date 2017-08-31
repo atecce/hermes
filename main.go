@@ -6,6 +6,7 @@ import (
 	"log"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 const gitDir = "/home/git"
@@ -59,27 +60,27 @@ func main() {
 	err := clean()
 	if err != nil {
 		log.Println("[FATAL] failed to clean")
-		log.Fatal("[FATAL] ", err)
+		log.Fatal(err)
 	}
 	err = clone()
 	if err != nil {
 		log.Println("[FATAL] failed to clone")
-		log.Fatal("[FATAL] ", err)
+		log.Fatal(err)
 	}
 	err = build()
 	if err != nil {
 		log.Println("[FATAL] failed to build")
-		log.Fatal("[FATAL] ", err)
+		log.Fatal(err)
 	}
 	err = provision()
 	if err != nil {
 		log.Println("[ERROR] failed to provision (maybe instance is already up?)")
-		log.Println("[ERROR] ", err)
+		log.Println(err)
 	}
 	err = deploy()
 	if err != nil {
 		log.Println("[FATAL] failed to deploy")
-		log.Fatal("[FATAL] ", err)
+		log.Fatal(err)
 	}
 }
 
@@ -92,7 +93,13 @@ func executeCommand(argv ...string) error {
 	cmd.Stderr = &errbuf
 
 	if err := cmd.Run(); err != nil {
-		output := outbuf.String() + "\n" + errbuf.String()
+
+		// TODO special case for provision. move outside
+		if strings.Contains(errbuf.String(), "already exists") {
+			log.Println("[INFO] resource already provisioned. skipping")
+			return nil
+		}
+		output := outbuf.String() + errbuf.String()
 		return errors.New(output)
 	}
 	return nil
