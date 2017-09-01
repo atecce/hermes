@@ -89,7 +89,7 @@ func main() {
 	}
 	err = provision()
 	if err != nil {
-		log.Println("[ERROR] failed to provision (maybe instance is already up?)")
+		log.Println("[ERROR] failed to provision")
 		log.Println(err)
 	}
 	err = deploy()

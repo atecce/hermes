@@ -10,6 +10,7 @@ import (
 func executeCommand(argv ...string) error {
 
 	cmd := exec.Command(argv[0], argv[1:]...)
+	cmd.Env = []string{"GOOS=linux", "GOARCH=386"}
 
 	var outbuf, errbuf bytes.Buffer
 	cmd.Stdout = &outbuf
