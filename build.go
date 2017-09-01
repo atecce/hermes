@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 )
 
+var siteDir = filepath.Join(buildDir, "_site")
+
 func build() error {
 	log.Println("[INFO] building...")
 	if err := buildHtml(); err != nil {
@@ -19,12 +21,13 @@ func build() error {
 
 func buildHtml() error {
 	log.Println("[INFO] building html docs...")
-	cmd := exec.Command("/usr/local/bin/jekyll", "build", "-s", buildDir, "-d", filepath.Join(buildDir, "_site"))
-	return executeCommand(cmd)
+	cmd := exec.Command("jekyll", "build", "-s", buildDir, "-d", siteDir)
+	return execute(cmd)
 }
 
 func buildSvc() error {
 	log.Println("[INFO] building web server...")
-	cmd := exec.Command("/usr/bin/go", "build", filepath.Join(buildDir, "main.go"))
-	return executeCommand(cmd)
+	cmd := exec.Command("go", "build", filepath.Join(buildDir, "main.go"))
+	cmd.Dir = siteDir
+	return execute(cmd)
 }

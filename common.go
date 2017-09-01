@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func executeCommand(cmd *exec.Cmd) error {
+func execute(cmd *exec.Cmd) error {
 
 	log.Println("[INFO] executing command", cmd.Path, cmd.Args)
 
