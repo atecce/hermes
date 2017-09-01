@@ -18,10 +18,10 @@ func build() error {
 
 func buildHtml() error {
 	log.Println("[INFO] building html docs...")
-	return executeCommand("jekyll", "build", "-s", tmpDir, "-d", filepath.Join(tmpDir, "_site"))
+	return executeCommand("jekyll", "build", "-s", buildDir, "-d", filepath.Join(buildDir, "_site"))
 }
 
 func buildSvc() error {
 	log.Println("[INFO] building web server...")
-	return executeCommand("go", "build", filepath.Join(tmpDir, "main.go"))
+	return executeCommand("go", "build", filepath.Join(buildDir, "main.go"))
 }

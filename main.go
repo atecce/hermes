@@ -9,8 +9,9 @@ import (
 const gitDir = "/home/git"
 
 var (
-	tmpDir  = filepath.Join(gitDir, "tmp/www")
-	repoDir = filepath.Join(gitDir, "www.git")
+	repoDir  = filepath.Join(gitDir, "www.git")
+	tmpDir   = filepath.Join(gitDir, "tmp")
+	buildDir = filepath.Join(tmpDir, "www")
 )
 
 type temp interface {
@@ -25,12 +26,12 @@ type temp interface {
 
 func clean() error {
 	log.Println("[INFO] cleaning...")
-	return executeCommand("rm", "-rf", tmpDir)
+	return executeCommand("rm", "-rf", buildDir)
 }
 
 func clone() error {
 	log.Println("[INFO] cloning...")
-	return executeCommand("git", "clone", repoDir, tmpDir)
+	return executeCommand("git", "clone", repoDir, buildDir)
 }
 
 func test() error {
@@ -50,25 +51,6 @@ func provision() error {
 	default:
 		return err
 	}
-}
-
-func deploy() error {
-	log.Println("[INFO] deploying...")
-	if err := deploySite(); err != nil {
-		return err
-	}
-	if err := deploySvc(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func deploySite() error {
-	return executeCommand("gcloud", "compute", "copy-files", "/home/git/tmp/www/_site", "atec@atec:/home/atec", "--zone", "us-east1-b")
-}
-
-func deploySvc() error {
-	return nil
 }
 
 func main() {
