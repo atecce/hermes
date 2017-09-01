@@ -1,6 +1,9 @@
 package main
 
-import "log"
+import (
+	"log"
+	"os/exec"
+)
 
 func deploy() error {
 	log.Println("[INFO] deploying...")
@@ -15,7 +18,8 @@ func deploy() error {
 
 func deploySite() error {
 	log.Println("[INFO] deploying site...")
-	return executeCommand("gcloud", "compute", "copy-files", "/home/git/tmp/www/_site", "atec@atec:/home/atec", "--zone", "us-east1-b")
+	cmd := exec.Command("gcloud", "compute", "copy-files", "/home/git/tmp/www/_site", "atec@atec:/home/atec", "--zone", "us-east1-b")
+	return executeCommand(cmd)
 }
 
 func deploySvc() error {

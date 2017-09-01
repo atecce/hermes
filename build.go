@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -18,10 +19,12 @@ func build() error {
 
 func buildHtml() error {
 	log.Println("[INFO] building html docs...")
-	return executeCommand("jekyll", "build", "-s", buildDir, "-d", filepath.Join(buildDir, "_site"))
+	cmd := exec.Command("/usr/local/bin/jekyll", "build", "-s", buildDir, "-d", filepath.Join(buildDir, "_site"))
+	return executeCommand(cmd)
 }
 
 func buildSvc() error {
 	log.Println("[INFO] building web server...")
-	return executeCommand("go", "build", filepath.Join(buildDir, "main.go"))
+	cmd := exec.Command("/usr/bin/go", "build", filepath.Join(buildDir, "main.go"))
+	return executeCommand(cmd)
 }

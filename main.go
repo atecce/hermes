@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -24,14 +25,25 @@ type temp interface {
 	monitor() error
 }
 
+var tmpDirDoesntExist = errors.New("tmp dir doesn't exist")
+
 func clean() error {
 	log.Println("[INFO] cleaning...")
-	return executeCommand("rm", "-rf", buildDir)
+	cmd := exec.Command("rm", "-rf", buildDir)
+	err := executeCommand(cmd)
+	switch err {
+	case tmpDirDoesntExist:
+		log.Println("[INFO] build dir doesn't exist. skipping")
+		return nil
+	default:
+		return err
+	}
 }
 
 func clone() error {
 	log.Println("[INFO] cloning...")
-	return executeCommand("git", "clone", repoDir, buildDir)
+	cmd := exec.Command("git", "clone", repoDir, buildDir)
+	return executeCommand(cmd)
 }
 
 func test() error {
@@ -43,7 +55,8 @@ var resourceAlreadyProvisioned = errors.New("resource already provisioned")
 
 func provision() error {
 	log.Println("[INFO] provisioning...")
-	err := executeCommand("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b")
+	cmd := exec.Command("/usr/bin/gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b")
+	err := executeCommand(cmd)
 	switch err {
 	case resourceAlreadyProvisioned:
 		log.Println("[INFO] resource already provisioned. skipping")
