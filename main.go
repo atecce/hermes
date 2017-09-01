@@ -55,7 +55,7 @@ var resourceAlreadyProvisioned = errors.New("resource already provisioned")
 
 func provision() error {
 	log.Println("[INFO] provisioning...")
-	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b")
+	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--tags", "http-server")
 	err := execute(cmd)
 	switch err {
 	case resourceAlreadyProvisioned:
