@@ -23,5 +23,5 @@ func buildHtml() error {
 
 func buildSvc() error {
 	log.Println("[INFO] building web server...")
-	return executeCommand("GOOS=linux", "GOARCH=386", "go", "build", "main.go")
+	return executeCommand("GOOS=linux", "GOARCH=386", "go", "build", filepath.Join(tmpDir, "main.go"))
 }
