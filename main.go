@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"errors"
 	"log"
-	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
 const gitDir = "/home/git"
@@ -36,11 +33,6 @@ func clone() error {
 	return executeCommand("git", "clone", repoDir, tmpDir)
 }
 
-func build() error {
-	log.Println("[INFO] building...")
-	return executeCommand("jekyll", "build", "-s", tmpDir, "-d", filepath.Join(tmpDir, "_site"))
-}
-
 func test() error {
 	log.Println("[INFO] testing...")
 	return nil
@@ -62,7 +54,21 @@ func provision() error {
 
 func deploy() error {
 	log.Println("[INFO] deploying...")
+	if err := deploySite(); err != nil {
+		return err
+	}
+	if err := deploySvc(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func deploySite() error {
 	return executeCommand("gcloud", "compute", "copy-files", "/home/git/tmp/www/_site", "atec@atec:/home/atec", "--zone", "us-east1-b")
+}
+
+func deploySvc() error {
+	return nil
 }
 
 func main() {
@@ -91,24 +97,4 @@ func main() {
 		log.Println("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}
-}
-
-func executeCommand(argv ...string) error {
-
-	cmd := exec.Command(argv[0], argv[1:]...)
-
-	var outbuf, errbuf bytes.Buffer
-	cmd.Stdout = &outbuf
-	cmd.Stderr = &errbuf
-
-	if err := cmd.Run(); err != nil {
-
-		if strings.Contains(errbuf.String(), "already exists") {
-			return resourceAlreadyProvisioned
-		}
-
-		output := outbuf.String() + errbuf.String()
-		return errors.New(output)
-	}
-	return nil
 }
