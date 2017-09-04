@@ -18,13 +18,13 @@ func execute(cmd *exec.Cmd) (string, error) {
 
 	err := cmd.Run()
 	stdout := outbuf.String()
-	stderr := outbuf.String()
+	stderr := errbuf.String()
 
 	if err != nil {
 
 		// special case for provisioning
 		if strings.Contains(stderr, "already exists") {
-			log.Println("[INFO] looks like resource is already provisioned", errbuf.String())
+			log.Println("[INFO] looks like resource is already provisioned\n\n", stderr)
 			return stdout, resourceAlreadyProvisioned
 		}
 
@@ -37,8 +37,8 @@ func execute(cmd *exec.Cmd) (string, error) {
 		return stdout, errors.New(stderr)
 	}
 
-	log.Println("[INFO] stdout:\n", stdout)
-	log.Println("[INFO] stderr:\n", stderr)
+	log.Println("[INFO] stdout:\n\n", stdout)
+	log.Println("[INFO] stderr:\n\n", stderr)
 
 	return stdout, nil
 }

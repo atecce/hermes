@@ -41,6 +41,6 @@ func provisionNetwork() error {
 }
 
 func provisionInstance() error {
-	log.Println("[INFO] provisioning network...")
+	log.Println("[INFO] provisioning instance...")
 	return nil
 }
