@@ -3,14 +3,15 @@ package main
 import (
 	"bytes"
 	"errors"
-	"log"
 	"os/exec"
 	"strings"
+
+	"github.com/kr/pretty"
 )
 
 func execute(cmd *exec.Cmd) (string, error) {
 
-	log.Println("[INFO] executing command", cmd.Path, cmd.Args)
+	pretty.Logln("[INFO] executing command", cmd.Path, cmd.Args)
 
 	var outbuf, errbuf bytes.Buffer
 	cmd.Stdout = &outbuf
@@ -20,25 +21,19 @@ func execute(cmd *exec.Cmd) (string, error) {
 	stdout := outbuf.String()
 	stderr := errbuf.String()
 
+	pretty.Logln("[INFO] stdout:\n\n", stdout)
+	pretty.Logln("[INFO] stderr:\n\n", stderr)
+
 	if err != nil {
 
 		// special case for provisioning
 		if strings.Contains(stderr, "already exists") {
-			log.Println("[INFO] looks like resource is already provisioned\n\n", stderr)
+			pretty.Logln("[INFO] looks like resource is already provisioned\n\n", stderr)
 			return stdout, resourceAlreadyProvisioned
-		}
-
-		// special case for cleaning
-		if strings.Contains(err.Error(), "no such file or directory") {
-			log.Println("[INFO] looks like tmp dir doesn't exist")
-			return stdout, tmpDirDoesntExist
 		}
 
 		return stdout, errors.New(stderr)
 	}
-
-	log.Println("[INFO] stdout:\n\n", stdout)
-	log.Println("[INFO] stderr:\n\n", stderr)
 
 	return stdout, nil
 }

@@ -1,15 +1,16 @@
 package main
 
 import (
-	"log"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/kr/pretty"
 )
 
 var siteDir = filepath.Join(buildDir, "_site")
 
 func build() error {
-	log.Println("[INFO] building...")
+	pretty.Logln("[INFO] building...")
 	if err := buildHtml(); err != nil {
 		return err
 	}
@@ -20,7 +21,7 @@ func build() error {
 }
 
 func buildHtml() error {
-	log.Println("[INFO] building html docs...")
+	pretty.Logln("[INFO] building html docs...")
 	cmd := exec.Command("jekyll", "build", "-s", buildDir, "-d", siteDir)
 	if _, err := execute(cmd); err != nil {
 		return err
@@ -29,7 +30,7 @@ func buildHtml() error {
 }
 
 func buildSvc() error {
-	log.Println("[INFO] building web server...")
+	pretty.Logln("[INFO] building web server...")
 	cmd := exec.Command("go", "build", filepath.Join(buildDir, "main.go"))
 	cmd.Dir = siteDir
 	if _, err := execute(cmd); err != nil {

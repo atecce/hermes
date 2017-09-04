@@ -5,6 +5,8 @@ import (
 	"log"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/kr/pretty"
 )
 
 const gitDir = "/home/git"
@@ -28,12 +30,12 @@ type temp interface {
 var tmpDirDoesntExist = errors.New("tmp dir doesn't exist")
 
 func clean() error {
-	log.Println("[INFO] cleaning...")
+	pretty.Logln("[INFO] cleaning...")
 	cmd := exec.Command("rm", "-rf", buildDir)
 	_, err := execute(cmd)
 	switch err {
 	case tmpDirDoesntExist:
-		log.Println("[INFO] build dir doesn't exist. skipping")
+		pretty.Logln("[INFO] build dir doesn't exist. skipping")
 		return nil
 	default:
 		return err
@@ -41,7 +43,7 @@ func clean() error {
 }
 
 func clone() error {
-	log.Println("[INFO] cloning...")
+	pretty.Logln("[INFO] cloning...")
 	cmd := exec.Command("git", "clone", repoDir, buildDir)
 	if _, err := execute(cmd); err != nil {
 		return err
@@ -50,19 +52,19 @@ func clone() error {
 }
 
 func test() error {
-	log.Println("[INFO] testing...")
+	pretty.Logln("[INFO] testing...")
 	return nil
 }
 
 var resourceAlreadyProvisioned = errors.New("resource already provisioned")
 
 func provision() error {
-	log.Println("[INFO] provisioning...")
+	pretty.Logln("[INFO] provisioning...")
 	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--tags", "http-server")
 	_, err := execute(cmd)
 	switch err {
 	case resourceAlreadyProvisioned:
-		log.Println("[INFO] resource already provisioned. skipping")
+		pretty.Logln("[INFO] resource already provisioned. skipping")
 		return nil
 	default:
 		return err
@@ -72,27 +74,27 @@ func provision() error {
 func main() {
 	err := clean()
 	if err != nil {
-		log.Println("[FATAL] failed to clean")
+		pretty.Logln("[FATAL] failed to clean")
 		log.Fatal(err)
 	}
 	err = clone()
 	if err != nil {
-		log.Println("[FATAL] failed to clone")
+		pretty.Logln("[FATAL] failed to clone")
 		log.Fatal(err)
 	}
 	err = build()
 	if err != nil {
-		log.Println("[FATAL] failed to build")
+		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
 	err = provision()
 	if err != nil {
-		log.Println("[ERROR] failed to provision")
-		log.Println(err)
+		pretty.Logln("[ERROR] failed to provision")
+		pretty.Logln(err)
 	}
 	err = configure()
 	if err != nil {
-		log.Println("[FATAL] failed to configure")
+		pretty.Logln("[FATAL] failed to configure")
 		log.Fatal(err)
 	}
 }
