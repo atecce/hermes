@@ -22,12 +22,18 @@ func build() error {
 func buildHtml() error {
 	log.Println("[INFO] building html docs...")
 	cmd := exec.Command("jekyll", "build", "-s", buildDir, "-d", siteDir)
-	return execute(cmd)
+	if _, err := execute(cmd); err != nil {
+		return err
+	}
+	return nil
 }
 
 func buildSvc() error {
 	log.Println("[INFO] building web server...")
 	cmd := exec.Command("go", "build", filepath.Join(buildDir, "main.go"))
 	cmd.Dir = siteDir
-	return execute(cmd)
+	if _, err := execute(cmd); err != nil {
+		return err
+	}
+	return nil
 }

@@ -21,10 +21,22 @@ func provision() error {
 
 func provisionNetwork() error {
 	log.Println("[INFO] provisioning network...")
-	cmd := exec.Command("aws", "ec2", "create-vpc", "--cidr-block", "10.0.0.0/28", "--query", "'VpcVpcId'", "--output", "text")
-	if err := execute(cmd); err != nil {
+
+	vpcId, err := execute(exec.Command("aws", "ec2", "create-vpc", "--cidr-block", "10.0.0.0/28", "--query", "Vpc.VpcId", "--output", "text"))
+	if err != nil {
 		return err
 	}
+
+	_, err = execute(exec.Command("aws", "ec2", "modify-vpc-attribute", "--vpc-id", vpcId, "--enable-dns-support", "{\"Value\":true}"))
+	if err != nil {
+		return err
+	}
+
+	_, err = execute(exec.Command("aws", "ec2", "modify-vpc-attribute", "--vpc-id", vpcId, "--enable-dns-hostnames", "{\"Value\":true}"))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

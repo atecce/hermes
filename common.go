@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func execute(cmd *exec.Cmd) error {
+func execute(cmd *exec.Cmd) (string, error) {
 
 	log.Println("[INFO] executing command", cmd.Path, cmd.Args)
 
@@ -17,27 +17,28 @@ func execute(cmd *exec.Cmd) error {
 	cmd.Stderr = &errbuf
 
 	err := cmd.Run()
-	output := outbuf.String() + errbuf.String()
-	log.Println("[INFO] combined output:", output)
+	stdout := outbuf.String()
+	stderr := outbuf.String()
 
 	if err != nil {
 
-		log.Println("[ERROR]", err)
-
 		// special case for provisioning
-		if strings.Contains(errbuf.String(), "already exists") {
+		if strings.Contains(stderr, "already exists") {
 			log.Println("[INFO] looks like resource is already provisioned", errbuf.String())
-			return resourceAlreadyProvisioned
+			return stdout, resourceAlreadyProvisioned
 		}
 
 		// special case for cleaning
 		if strings.Contains(err.Error(), "no such file or directory") {
 			log.Println("[INFO] looks like tmp dir doesn't exist")
-			return tmpDirDoesntExist
+			return stdout, tmpDirDoesntExist
 		}
 
-		return errors.New(output)
+		return stdout, errors.New(stderr)
 	}
 
-	return nil
+	log.Println("[INFO] stdout:\n", stdout)
+	log.Println("[INFO] stderr:\n", stderr)
+
+	return stdout, nil
 }
