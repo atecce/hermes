@@ -51,21 +51,6 @@ func test() error {
 	return nil
 }
 
-var resourceAlreadyProvisioned = errors.New("resource already provisioned")
-
-func provision() error {
-	log.Println("[INFO] provisioning...")
-	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--tags", "http-server")
-	err := execute(cmd)
-	switch err {
-	case resourceAlreadyProvisioned:
-		log.Println("[INFO] resource already provisioned. skipping")
-		return nil
-	default:
-		return err
-	}
-}
-
 func main() {
 	err := clean()
 	if err != nil {
