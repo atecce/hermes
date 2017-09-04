@@ -30,7 +30,7 @@ var tmpDirDoesntExist = errors.New("tmp dir doesn't exist")
 func clean() error {
 	log.Println("[INFO] cleaning...")
 	cmd := exec.Command("rm", "-rf", buildDir)
-	err := execute(cmd)
+	_, err := execute(cmd)
 	switch err {
 	case tmpDirDoesntExist:
 		log.Println("[INFO] build dir doesn't exist. skipping")
@@ -43,7 +43,10 @@ func clean() error {
 func clone() error {
 	log.Println("[INFO] cloning...")
 	cmd := exec.Command("git", "clone", repoDir, buildDir)
-	return execute(cmd)
+	if _, err := execute(cmd); err != nil {
+		return err
+	}
+	return nil
 }
 
 func test() error {
@@ -56,7 +59,7 @@ var resourceAlreadyProvisioned = errors.New("resource already provisioned")
 func provision() error {
 	log.Println("[INFO] provisioning...")
 	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--tags", "http-server")
-	err := execute(cmd)
+	_, err := execute(cmd)
 	switch err {
 	case resourceAlreadyProvisioned:
 		log.Println("[INFO] resource already provisioned. skipping")

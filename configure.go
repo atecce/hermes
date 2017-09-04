@@ -9,5 +9,8 @@ import (
 func configure() error {
 	log.Println("[INFO] configuring...")
 	cmd := exec.Command("gcloud", "compute", "copy-files", filepath.Join(buildDir, "_site"), "atec@atec:/home/atec", "--zone", "us-east1-b")
-	return execute(cmd)
+	if _, err := execute(cmd); err != nil {
+		return err
+	}
+	return nil
 }
