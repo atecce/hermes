@@ -7,8 +7,6 @@ import (
 	"github.com/kr/pretty"
 )
 
-var siteDir = filepath.Join(buildDir, "_site")
-
 func build() error {
 	pretty.Logln("[INFO] building...")
 	if err := buildHtml(); err != nil {
@@ -22,7 +20,8 @@ func build() error {
 
 func buildHtml() error {
 	pretty.Logln("[INFO] building html docs...")
-	cmd := exec.Command("jekyll", "build", "-s", buildDir, "-d", siteDir)
+	cmd := exec.Command("jekyll", "build", "-s", ".", "-d", buildDir)
+	cmd.Dir = filepath.Join(*repoDir, "../") // TODO this assumes post-commit hook
 	if _, err := execute(cmd); err != nil {
 		return err
 	}
@@ -31,8 +30,8 @@ func buildHtml() error {
 
 func buildSvc() error {
 	pretty.Logln("[INFO] building web server...")
-	cmd := exec.Command("go", "build", filepath.Join(buildDir, "main.go"))
-	cmd.Dir = siteDir
+	cmd := exec.Command("go", "build", "-o", filepath.Join(buildDir, "main"), "main.go")
+	cmd.Dir = filepath.Join(*repoDir, "../") // TODO this assumes post-commit hook
 	if _, err := execute(cmd); err != nil {
 		return err
 	}

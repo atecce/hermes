@@ -1,17 +1,22 @@
 package main
 
 import (
-	"os/exec"
+	"errors"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/kr/pretty"
 )
 
 func configure() error {
+
 	pretty.Logln("[INFO] configuring...")
-	cmd := exec.Command("gcloud", "compute", "copy-files", filepath.Join(buildDir, "_site"), "atec@atec:/home/atec", "--zone", "us-east1-b")
-	if _, err := execute(cmd); err != nil {
-		return err
+
+	userAgentsDir := filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents", "www.plist")
+	if err := ioutil.WriteFile(userAgentsDir, userAgent, 0644); err != nil {
+		pretty.Logln("[ERROR]", err)
+		return errors.New("failed to write launchd User Agent")
 	}
 	return nil
 }

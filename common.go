@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"os/exec"
-	"strings"
 
 	"github.com/kr/pretty"
 )
@@ -25,13 +24,6 @@ func execute(cmd *exec.Cmd) (string, error) {
 	pretty.Logln("[INFO] stderr:\n\n", stderr)
 
 	if err != nil {
-
-		// special case for provisioning
-		if strings.Contains(stderr, "already exists") {
-			pretty.Logln("[INFO] looks like resource is already provisioned\n\n", stderr)
-			return stdout, resourceAlreadyProvisioned
-		}
-
 		return stdout, errors.New(stderr)
 	}
 

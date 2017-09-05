@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -11,7 +12,8 @@ import (
 )
 
 var (
-	tmpDir = flag.String("tmp", "/tmp", "temporary directory for build artefacts")
+	repoDir = flag.String("repo", os.Getenv("GIT_DIR"), "directory path for repository")
+	tmpDir  = flag.String("tmp", os.TempDir(), "temporary directory path for build artefacts")
 
 	// TODO remove special case
 	buildDir = filepath.Join(*tmpDir, "www")
@@ -56,20 +58,17 @@ func test() error {
 	return nil
 }
 
-var resourceAlreadyProvisioned = errors.New("resource already provisioned")
-
-func provision() error {
-	pretty.Logln("[INFO] provisioning...")
-	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--tags", "http-server")
-	_, err := execute(cmd)
-	switch err {
-	case resourceAlreadyProvisioned:
-		pretty.Logln("[INFO] resource already provisioned. skipping")
-		return nil
-	default:
-		return err
-	}
-}
+var userAgent = []byte(`
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>www</string>
+	<key>Program</key>
+	<string>/tmp/www/main</string>
+</dict>
+</plist>`)
 
 func main() {
 	err := clean()
@@ -86,11 +85,6 @@ func main() {
 	if err != nil {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
-	}
-	err = provision()
-	if err != nil {
-		pretty.Logln("[ERROR] failed to provision")
-		pretty.Logln(err)
 	}
 	err = configure()
 	if err != nil {
