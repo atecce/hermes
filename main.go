@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"log"
 	"os/exec"
 	"path/filepath"
@@ -9,12 +10,11 @@ import (
 	"github.com/kr/pretty"
 )
 
-const gitDir = "/home/git"
-
 var (
-	repoDir  = filepath.Join(gitDir, "www.git")
-	tmpDir   = filepath.Join(gitDir, "tmp")
-	buildDir = filepath.Join(tmpDir, "www")
+	tmpDir = flag.String("tmp", "/tmp", "temporary directory for build artefacts")
+
+	// TODO remove special case
+	buildDir = filepath.Join(*tmpDir, "www")
 )
 
 type temp interface {
@@ -44,7 +44,7 @@ func clean() error {
 
 func clone() error {
 	pretty.Logln("[INFO] cloning...")
-	cmd := exec.Command("git", "clone", repoDir, buildDir)
+	cmd := exec.Command("git", "clone", ".", buildDir)
 	if _, err := execute(cmd); err != nil {
 		return err
 	}
