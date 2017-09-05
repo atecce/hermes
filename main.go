@@ -11,11 +11,13 @@ import (
 	"github.com/kr/pretty"
 )
 
+// TODO break out into special implementation for launchd
+var userAgentPath = filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents", "www.plist")
 var (
 	repoDir = flag.String("repo", os.Getenv("GIT_DIR"), "directory path for repository")
 	tmpDir  = flag.String("tmp", os.TempDir(), "temporary directory path for build artefacts")
 
-	// TODO remove special case
+	// TODO make this configurable and get better default
 	buildDir = filepath.Join(*tmpDir, "www")
 )
 
@@ -58,17 +60,18 @@ func test() error {
 	return nil
 }
 
-var userAgent = []byte(`
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>Label</key>
-	<string>www</string>
-	<key>Program</key>
-	<string>/tmp/www/main</string>
-</dict>
-</plist>`)
+func deploy() error {
+	pretty.Logln("[INFO] deploying...")
+	cmd := exec.Command("launchctl", "unload", userAgentPath)
+	if _, err := execute(cmd); err != nil {
+		pretty.Logln("[ERROR] failed to unload launchd job, assuming it hasn't started...")
+	}
+	cmd = exec.Command("launchctl", "load", userAgentPath)
+	if _, err := execute(cmd); err != nil {
+		return err
+	}
+	return nil
+}
 
 func main() {
 	err := clean()
@@ -89,6 +92,11 @@ func main() {
 	err = configure()
 	if err != nil {
 		pretty.Logln("[FATAL] failed to configure")
+		log.Fatal(err)
+	}
+	err = deploy()
+	if err != nil {
+		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}
 }
