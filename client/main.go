@@ -7,7 +7,6 @@ import (
 )
 
 type temp interface {
-	clone() error
 	build() error
 	test() error
 	provision() error
@@ -17,17 +16,7 @@ type temp interface {
 }
 
 func main() {
-	err := clean()
-	if err != nil {
-		pretty.Logln("[FATAL] failed to clean")
-		log.Fatal(err)
-	}
-	err = clone()
-	if err != nil {
-		pretty.Logln("[FATAL] failed to clone")
-		log.Fatal(err)
-	}
-	err = build()
+	err := build()
 	if err != nil {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
