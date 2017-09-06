@@ -16,17 +16,12 @@ type temp interface {
 }
 
 func main() {
-	err := build()
+	ref, err := build()
 	if err != nil {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
-	err = configure()
-	if err != nil {
-		pretty.Logln("[FATAL] failed to configure")
-		log.Fatal(err)
-	}
-	err = deploy()
+	_, err = deploy(ref)
 	if err != nil {
 		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)

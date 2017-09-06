@@ -19,17 +19,19 @@ i'd like to have some room for my own free and creative expression, and i don't 
 the first answer is that this particular implementation is dependent on a bunch of stuff already, so there are already some primitives that i have no plans to build myself
 - git
 - go
+- docker
 - jekyll
 - gce
 - aws
 - launchd
 
 i am open to the idea that modular parts of this project's goal are best done by some other tools, for example
-- docker for building, configuring, deploying and managing services 
-- terraform to abstract over all the infrastructure providers to provision remote resources
+- terraform or docker-machine to abstract over all the infrastructure providers and provision remote resources
 - others
 
 hopefully these all come in due time, but the criteria of "seamlessness" is pretty high here, and the flavors of the month everyone points to in my experience are anything but seamless (especially Jenkins. i'm not using Jenkins. get over it)
+
+i am not open to the idea of "not worrying about machines", i have a personal interest in the entire cloud stack, so most of this work will probably be at the level of "CaaS" and lower
 
 what this aims to be in the short to medium term is a reference implementation of an interface for my own personal website's (again, if you want to call it that) needs and dependencies, then use that as a poc to add support for other development frameworks to make it developer agnostic with as few opinions as possible (besides git. use git)
 
