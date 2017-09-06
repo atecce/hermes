@@ -1,10 +1,13 @@
 package main
 
 import (
+	"flag"
 	"log"
 
 	"github.com/kr/pretty"
 )
+
+var verbose = flag.Bool("verbose", false, "verbosity flag")
 
 type temp interface {
 	build() error
@@ -16,6 +19,9 @@ type temp interface {
 }
 
 func main() {
+
+	flag.Parse()
+
 	ref, err := build()
 	if err != nil {
 		pretty.Logln("[FATAL] failed to build")
@@ -25,4 +31,5 @@ func main() {
 		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}
+	pretty.Logln("[INFO] success!")
 }
