@@ -21,8 +21,7 @@ func main() {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
-	_, err = deploy(ref)
-	if err != nil {
+	if err := deploy(ref); err != nil {
 		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}

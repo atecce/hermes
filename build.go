@@ -9,6 +9,7 @@ import (
 
 func build() (string, error) {
 	pretty.Logln("[INFO] building...")
-	ref, err := execute(exec.Command("docker", "build", "-q", "."))
-	return strings.Trim(ref, "\n"), err
+	stdout, _ := execute(exec.Command("docker", "build", "-q", "."))
+	ref := strings.Trim(stdout, "\n")
+	return ref, nil
 }
