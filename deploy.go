@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -29,18 +28,45 @@ func localDeploy(name string) error {
 }
 
 func localClean() error {
-	stdout, err := execute(exec.Command("docker", "ps", "-f", "publish=8080", "-q"))
-	if err != nil {
-		return err
-	}
-	ref := strings.Trim(stdout, "\n")
+	ref, err := getContainerRef("8080")
 	_, err = execute(exec.Command("docker", "rm", "-f", ref))
 	return err
 }
 
 func remoteDeploy(name string) error {
 	pretty.Logln("[INFO] deploying remotely...")
-	cmd := exec.Command("gcloud", "compute", "ssh", "atec", "--zone", "us-east1-b", "--command", fmt.Sprintf("'sudo docker run -d -p 80:8080 %s'", name))
-	_, err := execute(cmd)
+	_, err := executeGce(exec.Command("sudo", "docker", "run", "-d", "-p", "80:8080", name))
+	switch err {
+	case portAlreadyAllocated:
+		pretty.Logln("[INFO] looks like port is already allocated. cleaning...")
+		if err := remoteClean(); err != nil {
+			return err
+		}
+		return remoteDeploy(name)
+	case nil:
+		return nil
+	}
 	return err
+}
+
+func remoteClean() error {
+	ref, err := getContainerRefGce("8080")
+	_, err = executeGce(exec.Command("sudo", "docker", "rm", "-f", ref))
+	return err
+}
+
+func getContainerRef(port string) (string, error) {
+	stdout, err := execute(exec.Command("docker", "ps", "-f", "publish="+port, "-q"))
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(stdout, "\n"), nil
+}
+
+func getContainerRefGce(port string) (string, error) {
+	stdout, err := executeGce(exec.Command("sudo", "docker", "ps", "-f", "publish="+port, "-q"))
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(stdout, "\n"), nil
 }

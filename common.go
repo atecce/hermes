@@ -9,6 +9,10 @@ import (
 	"github.com/kr/pretty"
 )
 
+type executive interface {
+	execute(cmd *exec.Cmd) (string, error)
+}
+
 func execute(cmd *exec.Cmd) (string, error) {
 
 	var outbuf, errbuf bytes.Buffer
@@ -29,6 +33,11 @@ func execute(cmd *exec.Cmd) (string, error) {
 		return stdout, checkErr(stderr)
 	}
 	return stdout, nil
+}
+
+func executeGce(remoteCmd *exec.Cmd) (string, error) {
+	args := strings.Join(remoteCmd.Args, " ")
+	return execute(exec.Command("gcloud", "compute", "ssh", "atec", "--zone", "us-east1-b", "--command", args))
 }
 
 var (
