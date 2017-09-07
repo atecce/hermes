@@ -24,12 +24,12 @@ func main() {
 
 	flag.Parse()
 
-	ref, err := build(name)
+	_, err := build(name)
 	if err != nil {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
-	if err := deploy(name); err != nil {
+	if err := remoteDeploy(name); err != nil {
 		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}
