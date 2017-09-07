@@ -18,16 +18,18 @@ type temp interface {
 	monitor() error
 }
 
+const name = "atec/www"
+
 func main() {
 
 	flag.Parse()
 
-	ref, err := build()
+	_, err := build(name)
 	if err != nil {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
-	if err := deploy(ref); err != nil {
+	if err := remoteDeploy(name); err != nil {
 		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}

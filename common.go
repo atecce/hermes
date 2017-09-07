@@ -9,6 +9,10 @@ import (
 	"github.com/kr/pretty"
 )
 
+type executive interface {
+	execute(cmd *exec.Cmd) (string, error)
+}
+
 func execute(cmd *exec.Cmd) (string, error) {
 
 	var outbuf, errbuf bytes.Buffer
@@ -31,11 +35,23 @@ func execute(cmd *exec.Cmd) (string, error) {
 	return stdout, nil
 }
 
-var portAlreadyAllocated = errors.New("port is already allocated")
+func executeGce(remoteCmd *exec.Cmd) (string, error) {
+	args := strings.Join(remoteCmd.Args, " ")
+	return execute(exec.Command("gcloud", "compute", "ssh", "atec", "--zone", "us-east1-b", "--command", args))
+}
+
+var (
+	portAlreadyAllocated       = errors.New("port is already allocated") // docker
+	resourceAlreadyProvisioned = errors.New("resource already exists")   // gce
+	tmpDirDoesntExist          = errors.New("tmp dir doesn't exist")     // unix fs
+)
 
 func checkErr(stderr string) error {
 	if strings.Contains(stderr, "port is already allocated") {
 		return portAlreadyAllocated
+	}
+	if strings.Contains(stderr, "already exists") {
+		return resourceAlreadyProvisioned
 	}
 	return errors.New(stderr)
 }
