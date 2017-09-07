@@ -42,7 +42,7 @@ func checkErr(stderr string) error {
 		return portAlreadyAllocated
 	}
 	if strings.Contains(stderr, "already exists") {
-		return stdout, resourceAlreadyProvisioned
+		return resourceAlreadyProvisioned
 	}
 	return errors.New(stderr)
 }

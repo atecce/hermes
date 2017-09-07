@@ -1,5 +1,11 @@
 package main
 
+import (
+	"os/exec"
+
+	"github.com/kr/pretty"
+)
+
 func provision() error {
 	pretty.Logln("[INFO] provisioning...")
 	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--tags", "http-server")
