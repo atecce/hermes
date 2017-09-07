@@ -29,7 +29,7 @@ func main() {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
-	if err := remoteDeploy(name); err != nil {
+	if err := (remote{}.deploy(name)); err != nil {
 		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}

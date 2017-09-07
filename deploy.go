@@ -11,38 +11,42 @@ type deployer interface {
 	deploy(name string) error
 }
 
-func localDeploy(name string) error {
+func (_ local) deploy(name string) error {
 	pretty.Logln("[INFO] deploying locally...")
-	_, err := execute(exec.Command("docker", "run", "-d", "-p", "8080:8080", name))
+	_, err := local{}.execute(exec.Command("docker", "run", "-d", "-p", "8080:8080", name))
 	switch err {
 	case portAlreadyAllocated:
 		pretty.Logln("[INFO] looks like port is already allocated. cleaning...")
-		if err := localClean(); err != nil {
+		if err := (local{}.clean()); err != nil {
 			return err
 		}
-		return localDeploy(name)
+		return local{}.deploy(name)
 	case nil:
 		return nil
 	}
 	return err
 }
 
-func localClean() error {
+type cleaner interface {
+	clean() error
+}
+
+func (_ local) clean() error {
 	ref, err := getContainerRef("8080")
-	_, err = execute(exec.Command("docker", "rm", "-f", ref))
+	_, err = local{}.execute(exec.Command("docker", "rm", "-f", ref))
 	return err
 }
 
-func remoteDeploy(name string) error {
+func (_ remote) deploy(name string) error {
 	pretty.Logln("[INFO] deploying remotely...")
-	_, err := executeGce(exec.Command("sudo", "docker", "run", "-d", "-p", "80:8080", name))
+	_, err := remote{}.execute(exec.Command("sudo", "docker", "run", "-d", "-p", "80:8080", name))
 	switch err {
 	case portAlreadyAllocated:
 		pretty.Logln("[INFO] looks like port is already allocated. cleaning...")
 		if err := remoteClean(); err != nil {
 			return err
 		}
-		return remoteDeploy(name)
+		return remote{}.deploy(name)
 	case nil:
 		return nil
 	}
@@ -51,12 +55,12 @@ func remoteDeploy(name string) error {
 
 func remoteClean() error {
 	ref, err := getContainerRefGce("8080")
-	_, err = executeGce(exec.Command("sudo", "docker", "rm", "-f", ref))
+	_, err = remote{}.execute(exec.Command("sudo", "docker", "rm", "-f", ref))
 	return err
 }
 
 func getContainerRef(port string) (string, error) {
-	stdout, err := execute(exec.Command("docker", "ps", "-f", "publish="+port, "-q"))
+	stdout, err := local{}.execute(exec.Command("docker", "ps", "-f", "publish="+port, "-q"))
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +68,7 @@ func getContainerRef(port string) (string, error) {
 }
 
 func getContainerRefGce(port string) (string, error) {
-	stdout, err := executeGce(exec.Command("sudo", "docker", "ps", "-f", "publish="+port, "-q"))
+	stdout, err := remote{}.execute(exec.Command("sudo", "docker", "ps", "-f", "publish="+port, "-q"))
 	if err != nil {
 		return "", err
 	}
