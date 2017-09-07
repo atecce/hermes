@@ -7,16 +7,16 @@ import (
 	"github.com/kr/pretty"
 )
 
-func deploy(ref string) error {
+func deploy(name string) error {
 	pretty.Logln("[INFO] deploying...")
-	_, err := execute(exec.Command("docker", "run", "-d", "-p", "8080:8080", ref))
+	_, err := execute(exec.Command("docker", "run", "-d", "-p", "8080:8080", name))
 	switch err {
 	case portAlreadyAllocated:
 		pretty.Logln("[INFO] looks like port is already allocated. cleaning...")
 		if err := clean(); err != nil {
 			return err
 		}
-		return deploy(ref)
+		return deploy(name)
 	case nil:
 		return nil
 	}
