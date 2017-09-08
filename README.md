@@ -8,7 +8,7 @@ personally as a developer i really want one concrete feature
 ## current implementation
 right now master compiles down to a post-commit git hook which builds a docker container for my personal public website (if you want to call it that) with jekyll and go, then deploys that service remotely
 
-![demo](http://atec.pub/demo.png)
+![demo](demo.png)
 
 ## why are you using shell commands for everything
 because it's the main api i know how to hook into (i like scripting) and i'm using it as a layer of indirection to the REST of these providers. it shouldn't be permanent, and i plan to refactor them to use their proper compile time api's
