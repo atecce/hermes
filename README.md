@@ -6,7 +6,7 @@ personally as a developer i really want one concrete feature
 - on `git checkout -b experiment` I get a sandboxed environment deployed accessible to QA (for example) through a private namespace (e.g. "hermes.www.experiment") and on subsequent changes to that branch the environment behaves as a normal CI/CD pipeline would
 
 ## current implementation
-right now master compiles down to a post-commit git hook which builds a docker container for my personal public website (if you want to call it that) with jekyll and go, then deploys that service locally
+right now master compiles down to a post-commit git hook which builds a docker container for my personal public website (if you want to call it that) with jekyll and go, then deploys that service remotely
 
 ![demo](http://atec.pub/demo.png)
 
