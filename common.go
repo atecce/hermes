@@ -17,24 +17,19 @@ type local struct{}
 
 func (_ local) execute(cmd *exec.Cmd) (string, error) {
 
-	var outbuf, errbuf bytes.Buffer
-	cmd.Stdout = &outbuf
-	cmd.Stderr = &errbuf
-
-	err := cmd.Run()
-	stdout := outbuf.String()
-	stderr := errbuf.String()
-
+	pretty.Logf("[INFO] running %s...", cmd.Args)
+	stdout, err := cmd.Output()
 	if *verbose {
-		pretty.Logln("[INFO] executing command", cmd.Path, cmd.Args, "...")
-		pretty.Logln("[INFO] stdout:\n\n", stdout)
-		pretty.Logln("[INFO] stderr:\n\n", stderr)
+		pretty.Log("[DEBUG] stdout:", string(stdout))
 	}
 
+	// cmd usually returns exit error if not nil, will panic otherwise
 	if err != nil {
-		return stdout, checkErr(stderr)
+		pretty.Logln("[INFO] checking exit error...")
+		return string(stdout), checkErr(err.(*exec.ExitError))
 	}
-	return stdout, nil
+
+	return string(stdout), nil
 }
 
 type remote struct{}
@@ -50,12 +45,13 @@ var (
 	tmpDirDoesntExist          = errors.New("tmp dir doesn't exist")     // unix fs
 )
 
-func checkErr(stderr string) error {
-	if strings.Contains(stderr, "port is already allocated") {
+func checkErr(err *exec.ExitError) error {
+	pretty.Log("[INFO] stderr:", string(err.Stderr))
+	if bytes.Contains(err.Stderr, []byte("port is already allocated")) {
 		return portAlreadyAllocated
 	}
-	if strings.Contains(stderr, "already exists") {
+	if bytes.Contains(err.Stderr, []byte("already exists")) {
 		return resourceAlreadyProvisioned
 	}
-	return errors.New(stderr)
+	return err
 }
