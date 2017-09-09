@@ -8,13 +8,7 @@ import (
 
 func provision() error {
 	pretty.Logln("[INFO] provisioning...")
-	cmd := exec.Command("gcloud", "compute", "instances", "create", "atec", "--zone", "us-east1-b", "--tags", "http-server")
+	cmd := exec.Command("vagrant", "provision")
 	_, err := local{}.run(cmd)
-	switch err {
-	case resourceAlreadyProvisioned:
-		pretty.Logln("[INFO] resource already provisioned. skipping")
-		return nil
-	default:
-		return err
-	}
+	return err
 }

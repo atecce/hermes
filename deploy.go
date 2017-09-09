@@ -12,7 +12,7 @@ type deployer interface {
 
 func (_ local) deploy(name string) error {
 	pretty.Logln("[INFO] deploying locally...")
-	_, err := local{}.run(exec.Command("vagrant", "share"))
+	_, err := local{}.run(exec.Command("vagrant", "share", "--http", "8080"))
 	return err
 }
 
