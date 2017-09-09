@@ -18,7 +18,7 @@ type temp interface {
 	monitor() error
 }
 
-const name = "atec/www"
+const name = ""
 
 func main() {
 
@@ -29,13 +29,10 @@ func main() {
 		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
-	if err := ship(name); err != nil {
+	if err := provision(); err != nil {
 		pretty.Logln("[FATAL] failed to ship")
 	}
-	if err := configure(name); err != nil {
-		pretty.Logln("[FATAL] failed to configure")
-	}
-	if err := (remote{}.deploy(name)); err != nil {
+	if err := (local{}.deploy(name)); err != nil {
 		pretty.Logln("[FATAL] failed to deploy")
 		log.Fatal(err)
 	}

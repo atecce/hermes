@@ -2,17 +2,11 @@ package main
 
 import (
 	"os/exec"
-	"strings"
 
 	"github.com/kr/pretty"
 )
 
 func build(name string) (string, error) {
 	pretty.Logln("[INFO] building...")
-	stdout, err := local{}.run(exec.Command("docker", "build", "-t", name, "-q", "."))
-	if err != nil {
-		return stdout, err
-	}
-	ref := strings.Trim(stdout, "\n")
-	return ref, nil
+	return local{}.run(exec.Command("vagrant", "up"))
 }
