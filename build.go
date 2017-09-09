@@ -9,7 +9,7 @@ import (
 
 func build(name string) (string, error) {
 	pretty.Logln("[INFO] building...")
-	stdout, err := local{}.execute(exec.Command("docker", "build", "-t", name, "-q", "."))
+	stdout, err := local{}.run(exec.Command("docker", "build", "-t", name, "-q", "."))
 	if err != nil {
 		return stdout, err
 	}

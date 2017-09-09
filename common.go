@@ -10,12 +10,12 @@ import (
 )
 
 type executive interface {
-	execute(cmd *exec.Cmd) (string, error)
+	run(cmd *exec.Cmd) (string, error)
 }
 
 type local struct{}
 
-func (_ local) execute(cmd *exec.Cmd) (string, error) {
+func (_ local) run(cmd *exec.Cmd) (string, error) {
 
 	pretty.Logf("[INFO] running %s...", cmd.Args)
 	stdout, err := cmd.Output()
@@ -34,9 +34,9 @@ func (_ local) execute(cmd *exec.Cmd) (string, error) {
 
 type remote struct{}
 
-func (_ remote) execute(remoteCmd *exec.Cmd) (string, error) {
+func (_ remote) run(remoteCmd *exec.Cmd) (string, error) {
 	args := strings.Join(remoteCmd.Args, " ")
-	return local{}.execute(exec.Command("gcloud", "compute", "ssh", "atec", "--zone", "us-east1-b", "--command", args))
+	return local{}.run(exec.Command("gcloud", "compute", "ssh", "atec", "--zone", "us-east1-b", "--command", args))
 }
 
 var (

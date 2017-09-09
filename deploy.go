@@ -13,7 +13,7 @@ type deployer interface {
 
 func (_ local) deploy(name string) error {
 	pretty.Logln("[INFO] deploying locally...")
-	_, err := local{}.execute(exec.Command("docker", "run", "-d", "-p", "8080:8080", name))
+	_, err := local{}.run(exec.Command("docker", "run", "-d", "-p", "8080:8080", name))
 	switch err {
 	case portAlreadyAllocated:
 		pretty.Logln("[INFO] looks like port is already allocated. cleaning...")
@@ -33,13 +33,13 @@ type cleaner interface {
 
 func (_ local) clean() error {
 	ref, err := getContainerRef("8080")
-	_, err = local{}.execute(exec.Command("docker", "rm", "-f", ref))
+	_, err = local{}.run(exec.Command("docker", "rm", "-f", ref))
 	return err
 }
 
 func (_ remote) deploy(name string) error {
 	pretty.Logln("[INFO] deploying remotely...")
-	_, err := remote{}.execute(exec.Command("sudo", "docker", "run", "-d", "-p", "80:8080", name))
+	_, err := remote{}.run(exec.Command("sudo", "docker", "run", "-d", "-p", "80:8080", name))
 	switch err {
 	case portAlreadyAllocated:
 		pretty.Logln("[INFO] looks like port is already allocated. cleaning...")
@@ -55,12 +55,12 @@ func (_ remote) deploy(name string) error {
 
 func remoteClean() error {
 	ref, err := getContainerRefGce("8080")
-	_, err = remote{}.execute(exec.Command("sudo", "docker", "rm", "-f", ref))
+	_, err = remote{}.run(exec.Command("sudo", "docker", "rm", "-f", ref))
 	return err
 }
 
 func getContainerRef(port string) (string, error) {
-	stdout, err := local{}.execute(exec.Command("docker", "ps", "-f", "publish="+port, "-q"))
+	stdout, err := local{}.run(exec.Command("docker", "ps", "-f", "publish="+port, "-q"))
 	if err != nil {
 		return "", err
 	}
@@ -68,7 +68,7 @@ func getContainerRef(port string) (string, error) {
 }
 
 func getContainerRefGce(port string) (string, error) {
-	stdout, err := remote{}.execute(exec.Command("sudo", "docker", "ps", "-f", "publish="+port, "-q"))
+	stdout, err := remote{}.run(exec.Command("sudo", "docker", "ps", "-f", "publish="+port, "-q"))
 	if err != nil {
 		return "", err
 	}
