@@ -32,9 +32,5 @@ func main() {
 	if err := provision(); err != nil {
 		pretty.Logln("[FATAL] failed to ship")
 	}
-	if err := (local{}.deploy(name)); err != nil {
-		pretty.Logln("[FATAL] failed to deploy")
-		log.Fatal(err)
-	}
 	pretty.Logln("[INFO] success!")
 }
