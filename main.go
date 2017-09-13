@@ -12,33 +12,41 @@ import (
 
 const root = ".git/refs/heads"
 
-func main() {
+type playground struct {
+	name    string
+	current []byte // last observed head
+	watcher *fsnotify.Watcher
+}
 
-	pretty.Logln("[INFO] initializing watcher...")
-	watcher, err := fsnotify.NewWatcher()
+func (p playground) watch() {
+
+	defer p.watcher.Close()
+
+	// add file to watchlist
+	pretty.Logln("[INFO] adding", p.name, "to watchlist...")
+	err := p.watcher.Add(p.name)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer watcher.Close()
 
-	// listen
-	var wg sync.WaitGroup
-	pretty.Logln("[INFO] listening...")
-	wg.Add(1)
-	go func() {
-		for {
-			// handle event or error
-			select {
-			case event := <-watcher.Events:
-				pretty.Logln("event:", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					pretty.Logln("modified file:", event.Name)
-				}
-			case err := <-watcher.Errors:
-				pretty.Logln("error:", err)
+	pretty.Logln("[INFO] watching", p.name, "...")
+	for {
+		select {
+		case event := <-p.watcher.Events:
+			pretty.Logln("event:", event)
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				pretty.Logln("modified file:", event.Name)
 			}
+		case err := <-p.watcher.Errors:
+			pretty.Logln("error:", err)
 		}
-	}()
+	}
+}
+
+func main() {
+
+	var wg sync.WaitGroup
+	wg.Add(1)
 
 	// read file info from directory
 	pretty.Logln("[INFO] reading directory...")
@@ -51,15 +59,28 @@ func main() {
 	pretty.Logln("[INFO] reading files...")
 	for _, fi := range fis {
 
-		// branch name is the file name
+		// get branch and head
+		pretty.Logln("[INFO] getting branch and head...")
 		branch := fi.Name()
-
-		// add file to watchlist
-		pretty.Logln("[INFO] adding", branch, "to watchlist...")
-		err = watcher.Add(filepath.Join(root, branch))
+		path := filepath.Join(root, branch)
+		head, err := ioutil.ReadFile(path)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		// create watcher
+		pretty.Logln("[INFO] initializing watcher...")
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			log.Fatal(err)
+		}
+		p := playground{
+			name:    path,
+			current: head,
+			watcher: watcher,
+		}
+		go p.watch()
+
 	}
 
 	wg.Wait()
