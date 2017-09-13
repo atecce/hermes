@@ -1,36 +1,66 @@
 package main
 
 import (
-	"flag"
+	"io/ioutil"
 	"log"
+	"path/filepath"
+	"sync"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/kr/pretty"
 )
 
-var verbose = flag.Bool("verbose", false, "verbosity flag")
-
-type temp interface {
-	build() error
-	test() error
-	provision() error
-	configure() error
-	deploy() error
-	monitor() error
-}
-
-const name = ""
+const root = ".git/refs/heads"
 
 func main() {
 
-	flag.Parse()
-
-	_, err := build(name)
+	pretty.Logln("[INFO] initializing watcher...")
+	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		pretty.Logln("[FATAL] failed to build")
 		log.Fatal(err)
 	}
-	if err := provision(); err != nil {
-		pretty.Logln("[FATAL] failed to ship")
+	defer watcher.Close()
+
+	// listen
+	var wg sync.WaitGroup
+	pretty.Logln("[INFO] listening...")
+	wg.Add(1)
+	go func() {
+		for {
+			// handle event or error
+			select {
+			case event := <-watcher.Events:
+				pretty.Logln("event:", event)
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					pretty.Logln("modified file:", event.Name)
+				}
+			case err := <-watcher.Errors:
+				pretty.Logln("error:", err)
+			}
+		}
+	}()
+
+	// read file info from directory
+	pretty.Logln("[INFO] reading directory...")
+	fis, err := ioutil.ReadDir(root)
+	if err != nil {
+		log.Fatal(err)
 	}
-	pretty.Logln("[INFO] success!")
+
+	// iterate through the file infos
+	pretty.Logln("[INFO] reading files...")
+	for _, fi := range fis {
+
+		// branch name is the file name
+		branch := fi.Name()
+
+		// add file to watchlist
+		pretty.Logln("[INFO] adding", branch, "to watchlist...")
+		err = watcher.Add(filepath.Join(root, branch))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	wg.Wait()
 }
