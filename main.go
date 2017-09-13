@@ -36,6 +36,13 @@ func (p playground) watch() {
 			pretty.Logln("event:", event)
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				pretty.Logln("modified file:", event.Name)
+				next, err := ioutil.ReadFile(p.name)
+				if err != nil {
+					log.Fatal(err)
+				}
+				pretty.Logln("old head:", p.current)
+				pretty.Logln("new head:", next)
+				p.current = next
 			}
 		case err := <-p.watcher.Errors:
 			pretty.Logln("error:", err)
@@ -82,6 +89,5 @@ func main() {
 		go p.watch()
 
 	}
-
 	wg.Wait()
 }
