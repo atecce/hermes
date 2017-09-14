@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -13,7 +14,11 @@ import (
 	"github.com/kr/pretty"
 )
 
-const root = ".git/refs/heads"
+// TODO
+const (
+	root     = ".git/refs/heads"
+	testPath = "/Users/atec/go/src/atec.pub/www"
+)
 
 type playground struct {
 	name    string
@@ -21,11 +26,24 @@ type playground struct {
 	watcher *fsnotify.Watcher
 }
 
-// TODO
-const testPath = "/Users/atec/go/src/atec.pub/www"
+func New(branch string) playground {
+	pretty.Logf("[INFO] initializing playground for %s...", branch)
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	head, err := ioutil.ReadFile(filepath.Join(root, branch))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return playground{
+		name:    filepath.Join(root, branch),
+		current: head,
+		watcher: watcher,
+	}
+}
 
 func (p playground) watch() {
-
 	defer p.watcher.Close()
 
 	// add file to watchlist
@@ -53,7 +71,7 @@ func (p playground) watch() {
 			// TODO
 			sh.Run(exec.Command("rm", "-rf", testPath+"/.hermes/master"))
 			sh.Run(exec.Command("git", "clone", testPath, testPath+"/.hermes/master"))
-			sh.Run(exec.Command("bundle", "exec", "jekyll", "build", "-s", testPath+"/.hermes/master", "-d", testPath+"/.hermes/master/_site"))
+			go sh.Run(exec.Command("bundle", "exec", "jekyll", "serve", "-s", testPath+"/.hermes/master", "-d", testPath+"/.hermes/master/_site"))
 
 		case err := <-p.watcher.Errors:
 			pretty.Logln("[ERROR]", err)
@@ -61,39 +79,22 @@ func (p playground) watch() {
 	}
 }
 
-func main() {
-
-	// read file info from directory
+func readDir(root string) []os.FileInfo {
 	pretty.Logln("[INFO] reading directory...")
 	fis, err := ioutil.ReadDir(root)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return fis
+}
+
+func main() {
 
 	// iterate through the file infos
 	pretty.Logln("[INFO] reading files...")
+	fis := readDir(root)
 	for _, fi := range fis {
-
-		// get branch and head
-		pretty.Logln("[INFO] getting branch and head...")
-		branch := fi.Name()
-		path := filepath.Join(root, branch)
-		head, err := ioutil.ReadFile(path)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// create watcher
-		pretty.Logln("[INFO] initializing watcher...")
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			log.Fatal(err)
-		}
-		p := playground{
-			name:    path,
-			current: head,
-			watcher: watcher,
-		}
+		p := New(fi.Name())
 		go p.watch()
 
 	}
