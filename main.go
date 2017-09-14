@@ -32,12 +32,13 @@ func New(branch string) playground {
 	if err != nil {
 		log.Fatal(err)
 	}
-	head, err := ioutil.ReadFile(filepath.Join(root, branch))
+	name := filepath.Join(root, branch)
+	head, err := ioutil.ReadFile(name)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return playground{
-		name:    filepath.Join(root, branch),
+		name:    name,
 		current: head,
 		watcher: watcher,
 	}
@@ -90,13 +91,10 @@ func readDir(root string) []os.FileInfo {
 
 func main() {
 
-	// iterate through the file infos
 	pretty.Logln("[INFO] reading files...")
-	fis := readDir(root)
-	for _, fi := range fis {
+	for _, fi := range readDir(root) {
 		p := New(fi.Name())
 		go p.watch()
-
 	}
 
 	// block forever
