@@ -30,7 +30,7 @@ the pragmatic answer is that this particular implementation is dependent on a bu
 - gce
 - aws
 
-the current master only uses the top 4, but i plan to unify all the branches with pluggable interfaces and would like to support the entire board
+the current master only uses the top 5, but i plan to unify all the branches with pluggable interfaces and would like to support the entire board
 
 i am open to the idea that modular parts of this project's goal are best done by some other tools, in particular terraform or docker-machine to abstract over all the infrastructure providers and provision remote resources
 

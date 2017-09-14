@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"atec.pub/sh"
+	"git.atec.pub/sh"
 	"github.com/fsnotify/fsnotify"
 	"github.com/kr/pretty"
 )
