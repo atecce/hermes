@@ -17,7 +17,7 @@ currently there is a redesign in the works for 0.1.0 that centers everything aro
 because it's the main api i know how to hook into (i like scripting) and i'm using it as a layer of indirection to the REST of these providers. it shouldn't be permanent, and i plan to refactor them to use their proper compile time api's
 
 ## why not use some combination of (tool1,...)
-the idealistic answet is that i'd like to have some room for my own free and creative expression, and i don't want to bolt together a non-orthogonal combination of black-boxes together while learning nothing and piling cruft on top of cruft. that answer doesn't really satisfy the incurious. a servile and artistically barren malady grips our industry
+the idealistic answer is that i'd like to have some room for my own free and creative expression, and i don't want to bolt together a non-orthogonal combination of black-boxes together while learning nothing and piling cruft on top of cruft. that doesn't typically satisfy the incurious. a servile and artistically barren malady grips our industry
 
 the pragmatic answer is that this particular implementation is dependent on a bunch of stuff already, so here are some primitives that i have no plans to build myself
 - unix
@@ -30,9 +30,7 @@ the pragmatic answer is that this particular implementation is dependent on a bu
 - gce
 - aws
 
-the current master only uses the top 5, but i plan to unify all the branches with pluggable interfaces and would like to support the entire board
-
-the current master only uses the top 4, but i plan to unify all the branches with pluggable interfaces and would like to support the entire board
+the current master only uses a few of these, but i plan to unify all the branches with pluggable interfaces and would like to support the entire board
 
 i am open to the idea that modular parts of this project's goal are best done by some other tools, in particular terraform or docker-machine to abstract over all the infrastructure providers and provision remote resources
 
